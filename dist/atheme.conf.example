@@ -2195,7 +2195,8 @@ operserv {
 	/* (*) oper_autoop
 	 *
 	 * Give IRC operators (umode +o) op and voice, plus owner on ircds
-	 * that have it, whenever they join any channel, registered or not
+	 * that have it, whenever they join any channel, registered or not,
+	 * and in the channels they are already in when they oper up
 	 * (provided by the "operserv/oper_autoop" module). In registered
 	 * channels with SECURE set, ChanServ will not strip these modes.
 	 * The modes are set by the client configured in operautoop {} below.
