@@ -206,6 +206,9 @@ extern bool (*ircd_on_logout)(struct user *u, const char *account);
  * the server and return; you will be called again when the server is really
  * deleted */
 extern void (*jupe)(const char *server, const char *reason);
+/* remove a fake server previously introduced with jupe()
+ * this must only be called for a name that is not a real server */
+extern void (*unjupe)(const char *server, const char *reason);
 /* set a dynamic spoof on a user
  * if the ircd does not notify the user of this, do
  * notice(source->nick, target->nick, "Setting your host to \2%s\2.", host); */
@@ -293,6 +296,7 @@ void generic_ping_sts(void);
 void generic_on_login(struct user *u, struct myuser *account, const char *wantedhost);
 bool generic_on_logout(struct user *u, const char *account);
 void generic_jupe(const char *server, const char *reason);
+void generic_unjupe(const char *server, const char *reason);
 void generic_sethost_sts(struct user *source, struct user *target, const char *host);
 void generic_fnc_sts(struct user *source, struct user *u, const char *newnick, int type);
 void generic_holdnick_sts(struct user *source, int duration, const char *nick, struct myuser *account);

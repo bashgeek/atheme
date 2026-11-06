@@ -166,6 +166,13 @@ struct hook_server_delete
 	/* space for reason etc here */
 };
 
+struct hook_server_squit_unknown
+{
+	struct sourceinfo * si;
+	const char *        name;
+	const char *        reason;
+};
+
 struct hook_user_change_password_check
 {
 	struct sourceinfo * si;

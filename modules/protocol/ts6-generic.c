@@ -473,6 +473,12 @@ ts6_jupe(const char *server, const char *reason)
 }
 
 static void
+ts6_unjupe(const char *server, const char *reason)
+{
+	sts(":%s SQUIT %s :%s", ME, server, reason);
+}
+
+static void
 ts6_sethost_sts(struct user *source, struct user *target, const char *host)
 {
 	if (use_euid)
@@ -1170,8 +1176,8 @@ m_kill(struct sourceinfo *si, int parc, char *parv[])
 static void
 m_squit(struct sourceinfo *si, int parc, char *parv[])
 {
-	slog(LG_DEBUG, "m_squit(): server leaving: %s from %s", parv[0], parv[1]);
-	server_delete(parv[0]);
+	slog(LG_DEBUG, "m_squit(): server leaving: %s from %s", parv[0], parc > 1 ? parv[1] : "<none>");
+	handle_squit(si, parv[0], parc > 1 ? parv[1] : NULL);
 }
 
 static void
@@ -1566,6 +1572,7 @@ mod_init(struct module *const restrict m)
 	ircd_on_login = &ts6_on_login;
 	ircd_on_logout = &ts6_on_logout;
 	jupe = &ts6_jupe;
+	unjupe = &ts6_unjupe;
 	sethost_sts = &ts6_sethost_sts;
 	fnc_sts = &ts6_fnc_sts;
 	invite_sts = &ts6_invite_sts;

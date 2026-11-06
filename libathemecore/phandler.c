@@ -44,6 +44,7 @@ void (*quit_sts) (struct user *u, const char *reason) = generic_quit_sts;
 void (*ircd_on_login) (struct user *u, struct myuser *account, const char *wantedhost) = generic_on_login;
 bool (*ircd_on_logout) (struct user *u, const char *account) = generic_on_logout;
 void (*jupe) (const char *server, const char *reason) = generic_jupe;
+void (*unjupe) (const char *server, const char *reason) = generic_unjupe;
 void (*sethost_sts) (struct user *source, struct user *target, const char *host) = generic_sethost_sts;
 void (*fnc_sts) (struct user *source, struct user *u, const char *newnick, int type) = generic_fnc_sts;
 void (*holdnick_sts)(struct user *source, int duration, const char *nick, struct myuser *account) = generic_holdnick_sts;
@@ -289,6 +290,12 @@ generic_on_logout(struct user *u, const char *account)
 
 void
 generic_jupe(const char *server, const char *reason)
+{
+	/* nothing to do here. */
+}
+
+void
+generic_unjupe(const char *server, const char *reason)
 {
 	/* nothing to do here. */
 }

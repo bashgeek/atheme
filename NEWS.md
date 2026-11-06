@@ -220,6 +220,14 @@ NickServ
   (unless the flag is unset by default)
 - NickServ `VHOST` no longer supports legacy pre-v5.0 command syntax
 
+OperServ
+--------
+- `JUPE` jupes are now stored in the database and reintroduced when services
+  restarts or relinks, when the jupe is SQUIT from the network, and when a
+  real server with that name links. New subcommands `JUPE ADD`, `JUPE DEL`,
+  `JUPE LIST` and `JUPE SYNC`; `JUPE <server> <reason>` still works.
+- The `operserv/jupe` module can no longer be unloaded.
+
 IRCds
 -----
 - Support `chm_nonotice.so` (Block channel notices) extension in charybdis IRCd

@@ -384,6 +384,12 @@ bahamut_jupe(const char *server, const char *reason)
 }
 
 static void
+bahamut_unjupe(const char *server, const char *reason)
+{
+	sts(":%s SQUIT %s :%s", me.name, server, reason);
+}
+
+static void
 bahamut_fnc_sts(struct user *source, struct user *u, const char *newnick, int type)
 {
 	sts(":%s SVSNICK %s %s %lu", source->nick, u->nick, newnick,
@@ -793,8 +799,8 @@ m_kill(struct sourceinfo *si, int parc, char *parv[])
 static void
 m_squit(struct sourceinfo *si, int parc, char *parv[])
 {
-	slog(LG_DEBUG, "m_squit(): server leaving: %s from %s", parv[0], parv[1]);
-	server_delete(parv[0]);
+	slog(LG_DEBUG, "m_squit(): server leaving: %s from %s", parv[0], parc > 1 ? parv[1] : "<none>");
+	handle_squit(si, parv[0], parc > 1 ? parv[1] : NULL);
 }
 
 static void
@@ -965,6 +971,7 @@ mod_init(struct module *const restrict m)
 	ircd_on_login = &bahamut_on_login;
 	ircd_on_logout = &bahamut_on_logout;
 	jupe = &bahamut_jupe;
+	unjupe = &bahamut_unjupe;
 	fnc_sts = &bahamut_fnc_sts;
 	invite_sts = &bahamut_invite_sts;
 	holdnick_sts = &bahamut_holdnick_sts;

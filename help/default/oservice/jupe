@@ -1,12 +1,24 @@
-Help for JUPE:
+Help for JUPE:
 
 JUPE introduces a fake server with the given name, so
-that the real server cannot connect. Jupes only last
-as long as services is connected to the uplink and
-can also (on most ircds) be removed with a simple
-/squit command.
+that the real server cannot connect.
 
-Syntax: JUPE <server> <reason>
+Jupes are stored in the services database. They are
+reintroduced when services restarts or relinks, when
+the jupe is removed with /squit, and when a real server
+with that name links. Use JUPE DEL to remove a jupe.
 
-Example:
-    /msg &nick& JUPE irc.blah.net very unstable server
+JUPE <server> <reason> is the same as JUPE ADD.
+
+Syntax: JUPE ADD <server> <reason>
+Syntax: JUPE DEL <server>
+Syntax: JUPE LIST [mask]
+Syntax: JUPE SYNC
+
+JUPE ADD on an existing jupe updates its reason.
+JUPE SYNC reintroduces every jupe on the network.
+
+Examples:
+    /msg &nick& JUPE ADD irc.blah.net very unstable server
+    /msg &nick& JUPE DEL irc.blah.net
+    /msg &nick& JUPE LIST *.blah.net

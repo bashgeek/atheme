@@ -688,6 +688,12 @@ inspircd_jupe(const char *server, const char *reason)
 }
 
 static void
+inspircd_unjupe(const char *server, const char *reason)
+{
+	sts(":%s SQUIT %s :%s", me.numeric, server, reason);
+}
+
+static void
 inspircd_sethost_sts(struct user *source, struct user *target, const char *host)
 {
 	if (has_chghostmod)
@@ -1262,7 +1268,7 @@ static void
 m_squit(struct sourceinfo *si, int parc, char *parv[])
 {
 	slog(LG_DEBUG, "m_squit(): server leaving: %s", parv[0]);
-	server_delete(parv[0]);
+	handle_squit(si, parv[0], parc > 1 ? parv[1] : NULL);
 }
 
 static void
@@ -1774,6 +1780,7 @@ mod_init(struct module *const restrict m)
 	ircd_on_login = &inspircd_on_login;
 	ircd_on_logout = &inspircd_on_logout;
 	jupe = &inspircd_jupe;
+	unjupe = &inspircd_unjupe;
 	sethost_sts = &inspircd_sethost_sts;
 	fnc_sts = &inspircd_fnc_sts;
 	invite_sts = &inspircd_invite_sts;

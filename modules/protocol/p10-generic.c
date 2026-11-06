@@ -328,6 +328,12 @@ p10_jupe(const char *server, const char *reason)
 }
 
 static void
+p10_unjupe(const char *server, const char *reason)
+{
+	sts("%s JU * -%s %d %lu :%s", me.numeric, server, SECONDS_PER_DAY, (unsigned long)CURRTIME, reason);
+}
+
+static void
 p10_sasl_sts(const char *target, char mode, const char *data)
 {
 	sts("%s XR %c%c %s :SASL:%c:%s", me.numeric, target[0], target[1], target, mode, data);
@@ -888,8 +894,8 @@ m_kill(struct sourceinfo *si, int parc, char *parv[])
 static void
 m_squit(struct sourceinfo *si, int parc, char *parv[])
 {
-	slog(LG_DEBUG, "m_squit(): server leaving: %s from %s", parv[0], parv[1]);
-	server_delete(parv[0]);
+	slog(LG_DEBUG, "m_squit(): server leaving: %s from %s", parv[0], parc > 1 ? parv[1] : "<none>");
+	handle_squit(si, parv[0], parc > 1 ? parv[1] : NULL);
 }
 
 // SERVER ircu.devel.atheme.org 1 1119902586 1119908830 J10 ABAP] + :lets lol
@@ -1067,6 +1073,7 @@ mod_init(struct module *const restrict m)
 	ircd_on_login = &p10_on_login;
 	ircd_on_logout = &p10_on_logout;
 	jupe = &p10_jupe;
+	unjupe = &p10_unjupe;
 	invite_sts = &p10_invite_sts;
 	sasl_sts = &p10_sasl_sts;
 	svslogin_sts = &p10_svslogin_sts;

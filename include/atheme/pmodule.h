@@ -57,6 +57,7 @@ void handle_topic_from(struct sourceinfo *, struct channel *, const char *, time
 void handle_kill(struct sourceinfo *, const char *, const char *);
 struct server *handle_server(struct sourceinfo *, const char *, const char *, int, const char *);
 void handle_eob(struct server *);
+void handle_squit(struct sourceinfo *, const char *, const char *);
 bool should_reg_umode(struct user *);
 
 /* services.c */

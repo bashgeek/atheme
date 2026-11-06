@@ -626,6 +626,12 @@ unreal_jupe(const char *server, const char *reason)
 }
 
 static void
+unreal_unjupe(const char *server, const char *reason)
+{
+	sts(":%s SQUIT %s :%s", me.name, server, reason);
+}
+
+static void
 unreal_sethost_sts(struct user *source, struct user *target, const char *host)
 {
 	sts(":%s CHGHOST %s :%s", source->nick, target->nick, host);
@@ -1343,8 +1349,8 @@ m_kill(struct sourceinfo *si, int parc, char *parv[])
 static void
 m_squit(struct sourceinfo *si, int parc, char *parv[])
 {
-	slog(LG_DEBUG, "m_squit(): server leaving: %s from %s", parv[0], parv[1]);
-	server_delete(parv[0]);
+	slog(LG_DEBUG, "m_squit(): server leaving: %s from %s", parv[0], parc > 1 ? parv[1] : "<none>");
+	handle_squit(si, parv[0], parc > 1 ? parv[1] : NULL);
 }
 
 static void
@@ -1653,6 +1659,7 @@ mod_init(struct module *const restrict m)
 	ircd_on_login = &unreal_on_login;
 	ircd_on_logout = &unreal_on_logout;
 	jupe = &unreal_jupe;
+	unjupe = &unreal_unjupe;
 	sethost_sts = &unreal_sethost_sts;
 	fnc_sts = &unreal_fnc_sts;
 	invite_sts = &unreal_invite_sts;

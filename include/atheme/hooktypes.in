@@ -45,6 +45,7 @@ channel_tschange                struct channel *
 server_add                      struct server *
 server_delete                   struct hook_server_delete *
 server_eob                      struct server *
+server_squit_unknown            struct hook_server_squit_unknown *
 user_add                        struct hook_user_nick *
 user_away                       struct user *
 user_delete                     struct user *

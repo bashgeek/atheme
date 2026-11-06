@@ -852,6 +852,26 @@ handle_server(struct sourceinfo *si, const char *name, const char *sid,
 	return s;
 }
 
+/* A SQUIT for a server we do not track is (most likely) aimed at one of
+ * our jupes; let modules that keep a list of jupes react to it.
+ */
+void
+handle_squit(struct sourceinfo *si, const char *name, const char *reason)
+{
+	if (server_find(name) != NULL)
+	{
+		server_delete(name);
+		return;
+	}
+
+	slog(LG_DEBUG, "handle_squit(): SQUIT for unknown server %s (%s)", name, reason != NULL ? reason : "");
+	hook_call_server_squit_unknown((&(struct hook_server_squit_unknown){
+		.si = si,
+		.name = name,
+		.reason = reason,
+	}));
+}
+
 void
 handle_eob(struct server *s)
 {

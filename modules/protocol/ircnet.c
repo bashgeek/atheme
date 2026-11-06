@@ -360,6 +360,12 @@ ircnet_jupe(const char *server, const char *reason)
 }
 
 static void
+ircnet_unjupe(const char *server, const char *reason)
+{
+	sts(":%s SQUIT %s :%s", me.name, server, reason);
+}
+
+static void
 m_topic(struct sourceinfo *si, int parc, char *parv[])
 {
 	struct channel *c = channel_find(parv[0]);
@@ -646,17 +652,19 @@ m_kill(struct sourceinfo *si, int parc, char *parv[])
 static void
 m_squit(struct sourceinfo *si, int parc, char *parv[])
 {
-	slog(LG_DEBUG, "m_squit(): server leaving: %s from %s", parv[0], parv[1]);
-	if (server_find(parv[0]))
-		server_delete(parv[0]);
-	else if (si->su != NULL)
+	const char *const reason = parc > 1 ? parv[1] : "<none>";
+
+	slog(LG_DEBUG, "m_squit(): server leaving: %s from %s", parv[0], reason);
+	if (!server_find(parv[0]) && si->su != NULL)
 	{
-		/* XXX we don't have a list of jupes, so let's just
-		 * assume it is one if we don't know it */
+		/* We don't track jupes as servers, so assume it is one if we
+		 * don't know it. Acknowledge the SQUIT; handle_squit() lets
+		 * modules that keep a jupe list reintroduce it if needed. */
 		slog(LG_INFO, "m_squit(): accepting SQUIT for jupe %s from %s", parv[0], si->su->nick);
-		sts(":%s WALLOPS :Received SQUIT %s from %s (%s)", me.numeric, parv[0], si->su->nick, parv[1]);
-		sts(":%s SQUIT %s :%s", me.numeric, parv[0], parv[1]);
+		sts(":%s WALLOPS :Received SQUIT %s from %s (%s)", me.numeric, parv[0], si->su->nick, reason);
+		sts(":%s SQUIT %s :%s", me.numeric, parv[0], reason);
 	}
+	handle_squit(si, parv[0], parc > 1 ? parv[1] : NULL);
 }
 
 static void
@@ -777,6 +785,7 @@ mod_init(struct module *const restrict m)
 	ircd_on_login = &ircnet_on_login;
 	ircd_on_logout = &ircnet_on_logout;
 	jupe = &ircnet_jupe;
+	unjupe = &ircnet_unjupe;
 	invite_sts = &ircnet_invite_sts;
 
 	mode_list = ircnet_mode_list;
