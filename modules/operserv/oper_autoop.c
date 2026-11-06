@@ -3,8 +3,9 @@
  * SPDX-URL: https://spdx.org/licenses/ISC.html
  *
  * Gives IRC operators (umode +o) owner (where the ircd has it), op and voice
- * when they join any channel, registered or not, and in every channel they
- * are already in when they become an IRC operator.
+ * when they join any channel, registered or not, in every channel they are
+ * already in when they become an IRC operator, and in the channels of IRC
+ * operators on a server once it finishes bursting (e.g. on services startup).
  *
  * Enabled with "oper_autoop;" in the operserv {} block. The modes are set by
  * a dedicated services client, configured in the operautoop {} block.
@@ -71,7 +72,7 @@ oper_autoop_give_status(struct chanuser *const restrict cu)
 
 /* Whether status may be given to this user now. Joins and mode changes from
  * a server that hasn't finished bursting are netjoins or a services restart;
- * the ircd already carries the user's status there.
+ * they are handled once at its end of burst instead.
  */
 static bool
 oper_autoop_can_give(struct user *const restrict u)
@@ -101,17 +102,43 @@ oper_autoop_join_hook(struct hook_channel_joinpart *const restrict hdata)
 	(void) oper_autoop_give_status(cu);
 }
 
-// A user who is already in channels became an IRC operator
 static void
-oper_autoop_user_oper_hook(struct user *const restrict u)
+oper_autoop_give_status_all(struct user *const restrict u)
 {
-	if (! oper_autoop_can_give(u))
-		return;
-
 	mowgli_node_t *n;
 
 	MOWGLI_ITER_FOREACH(n, u->channels.head)
 		(void) oper_autoop_give_status(n->data);
+}
+
+// A user who is already in channels became an IRC operator
+static void
+oper_autoop_user_oper_hook(struct user *const restrict u)
+{
+	if (oper_autoop_can_give(u))
+		(void) oper_autoop_give_status_all(u);
+}
+
+/* A server finished bursting. This covers services starting up (or relinking)
+ * and servers linking later: their IRC operators joined their channels during
+ * the burst, when the join hook skipped them. Users who already hold the
+ * status are left alone.
+ */
+static void
+oper_autoop_server_eob_hook(struct server *const restrict s)
+{
+	if (s == NULL || ! oper_autoop_enabled || autoopsvs->me == NULL)
+		return;
+
+	mowgli_node_t *n;
+
+	MOWGLI_ITER_FOREACH(n, s->userlist.head)
+	{
+		struct user *const u = n->data;
+
+		if (oper_autoop_applies(u))
+			(void) oper_autoop_give_status_all(u);
+	}
 }
 
 /* In SECURE (and freshly recreated) registered channels, ChanServ strips
@@ -149,6 +176,7 @@ mod_init(struct module *const restrict m)
 
 	(void) hook_add_channel_join(&oper_autoop_join_hook);
 	(void) hook_add_user_oper(&oper_autoop_user_oper_hook);
+	(void) hook_add_server_eob(&oper_autoop_server_eob_hook);
 	(void) hook_add_first_chanuser_sync(&oper_autoop_chanuser_sync_hook);
 }
 
@@ -156,6 +184,7 @@ static void
 mod_deinit(const enum module_unload_intent ATHEME_VATTR_UNUSED intent)
 {
 	(void) hook_del_chanuser_sync(&oper_autoop_chanuser_sync_hook);
+	(void) hook_del_server_eob(&oper_autoop_server_eob_hook);
 	(void) hook_del_user_oper(&oper_autoop_user_oper_hook);
 	(void) hook_del_channel_join(&oper_autoop_join_hook);
 

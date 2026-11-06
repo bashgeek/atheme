@@ -229,7 +229,8 @@ OperServ
 - The `operserv/jupe` module can no longer be unloaded.
 - Add `operserv/oper_autoop`: with `oper_autoop` set in the `operserv {}` block,
   IRC operators get op and voice (and owner where the ircd has it) on joining
-  any channel, and in the channels they are already in when they oper up.
+  any channel, and in the channels they are already in when they oper up or
+  when services start.
 
 IRCds
 -----
