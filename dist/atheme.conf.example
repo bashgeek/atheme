@@ -601,6 +601,7 @@ loadmodule "chanserv/antiflood";
  * MODLIST command                              operserv/modlist
  * Module inspect/load/reload/unload commands   operserv/modmanager
  * NOOP system                                  operserv/noop
+ * Auto owner/op/voice for IRC operators         operserv/oper_autoop
  * Regex mass akill (RAKILL command)            operserv/rakill
  * RAW command                                  operserv/raw
  * READONLY command                             operserv/readonly
@@ -653,6 +654,7 @@ loadmodule "operserv/mode";
 loadmodule "operserv/modlist";
 loadmodule "operserv/modmanager";
 loadmodule "operserv/noop";
+#loadmodule "operserv/oper_autoop";
 #loadmodule "operserv/rakill";
 loadmodule "operserv/readonly";
 loadmodule "operserv/rehash";
@@ -2189,6 +2191,15 @@ operserv {
 	 * (provided by the "operserv/modmanager" module).
 	 */
 	#modinspect_use_colors;
+
+	/* (*) oper_autoop
+	 *
+	 * Give IRC operators (umode +o) op and voice, plus owner on ircds
+	 * that have it, whenever they join any channel, registered or not
+	 * (provided by the "operserv/oper_autoop" module). In registered
+	 * channels with SECURE set, ChanServ will not strip these modes.
+	 */
+	#oper_autoop;
 };
 
 /* SaslServ configuration.

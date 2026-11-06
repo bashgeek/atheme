@@ -97,7 +97,8 @@ struct hook_chanuser_sync
 {
 	struct chanuser *  cu;            // Write NULL if you kicked the user. You must not destroy the channel.
 	const unsigned int flags;         // The user's channel access, if any
-	const bool         take_prefixes; // Whether temporary prefixes should be removed
+	bool               take_prefixes; // Whether temporary prefixes should be removed; a hook added
+	                                  // with hook_add_first_chanuser_sync() may clear it to keep them
 };
 
 struct hook_expiry_req

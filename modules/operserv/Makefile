@@ -31,6 +31,7 @@ SRCS   =                    \
     modlist.c               \
     modmanager.c            \
     noop.c                  \
+    oper_autoop.c           \
     rakill.c                \
     raw.c                   \
     readonly.c              \

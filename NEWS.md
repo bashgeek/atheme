@@ -227,6 +227,9 @@ OperServ
   real server with that name links. New subcommands `JUPE ADD`, `JUPE DEL`,
   `JUPE LIST` and `JUPE SYNC`; `JUPE <server> <reason>` still works.
 - The `operserv/jupe` module can no longer be unloaded.
+- Add `operserv/oper_autoop`: with `oper_autoop` set in the `operserv {}` block,
+  IRC operators get op and voice (and owner where the ircd has it) on joining
+  any channel.
 
 IRCds
 -----
