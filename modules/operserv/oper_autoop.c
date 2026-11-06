@@ -5,18 +5,41 @@
  * Gives IRC operators (umode +o) owner (where the ircd has it), op and voice
  * when they join any channel, registered or not.
  *
- * Enabled with "oper_autoop;" in the operserv {} block.
+ * Enabled with "oper_autoop;" in the operserv {} block. The modes are set by
+ * a dedicated services client, configured in the operautoop {} block.
  */
 
 #include <atheme.h>
 
 static struct service *opersvs = NULL;
+static struct service *autoopsvs = NULL;
 static bool oper_autoop_enabled = false;
 
 static bool
 oper_autoop_applies(struct user *const restrict u)
 {
 	return oper_autoop_enabled && u != NULL && (u->flags & UF_IRCOP) && ! is_internal_client(u);
+}
+
+// The client has no commands; answer CTCPs and explain what it does
+static void
+oper_autoop_handler(struct sourceinfo *const restrict si, const int parc, char **const restrict parv)
+{
+	char *const msg = parv[parc - 1];
+
+	if (*msg == '\001')
+	{
+		char *const cmd = strtok(msg, " ");
+		char *const text = strtok(NULL, "");
+
+		if (cmd != NULL)
+			(void) handle_ctcp_common(si, cmd, text);
+
+		return;
+	}
+
+	(void) command_success_nodata(si, _("I give IRC operators channel status when they join a channel. "
+	                                    "I have no commands."));
 }
 
 static void
@@ -37,7 +60,11 @@ oper_autoop_join_hook(struct hook_channel_joinpart *const restrict hdata)
 	if (u->server == NULL || ! (u->server->flags & SF_EOB))
 		return;
 
-	const char *const source = opersvs->me->nick;
+	// Not introduced to the network (yet)
+	if (autoopsvs->me == NULL)
+		return;
+
+	const char *const source = autoopsvs->me->nick;
 
 	if (ircd->uses_owner && ircd->owner_mode && ! (cu->modes & ircd->owner_mode))
 	{
@@ -81,6 +108,14 @@ mod_init(struct module *const restrict m)
 		return;
 	}
 
+	if (! (autoopsvs = service_add("operautoop", &oper_autoop_handler)))
+	{
+		(void) slog(LG_ERROR, "%s: service_add() failed", m->name);
+
+		m->mflags |= MODFLAG_FAIL;
+		return;
+	}
+
 	(void) add_bool_conf_item("OPER_AUTOOP", &opersvs->conf_table, 0, &oper_autoop_enabled, false);
 
 	(void) hook_add_channel_join(&oper_autoop_join_hook);
@@ -94,6 +129,8 @@ mod_deinit(const enum module_unload_intent ATHEME_VATTR_UNUSED intent)
 	(void) hook_del_channel_join(&oper_autoop_join_hook);
 
 	(void) del_conf_item("OPER_AUTOOP", &opersvs->conf_table);
+
+	(void) service_delete(autoopsvs);
 }
 
 SIMPLE_DECLARE_MODULE_V1("operserv/oper_autoop", MODULE_UNLOAD_CAPABILITY_OK)

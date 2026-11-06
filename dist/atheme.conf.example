@@ -2198,8 +2198,22 @@ operserv {
 	 * that have it, whenever they join any channel, registered or not
 	 * (provided by the "operserv/oper_autoop" module). In registered
 	 * channels with SECURE set, ChanServ will not strip these modes.
+	 * The modes are set by the client configured in operautoop {} below.
 	 */
 	#oper_autoop;
+};
+
+/* OperAutoOp configuration.
+ *
+ * The client that sets channel status for IRC operators (see oper_autoop
+ * in the operserv {} block above), provided by the "operserv/oper_autoop"
+ * module. It has no commands.
+ */
+operautoop {
+	nick = "OperAutoOp";
+	user = "OperAutoOp";
+	host = "services.int";
+	real = "Operator Auto Op";
 };
 
 /* SaslServ configuration.
