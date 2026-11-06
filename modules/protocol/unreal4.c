@@ -622,7 +622,44 @@ unreal_jupe(const char *server, const char *reason)
 
 	svs = service_find("operserv");
 	sts(":%s SQUIT %s :%s", svs != NULL ? svs->nick : ME, server, reason);
-	sts(":%s SERVER %s 2 :%s", me.name, server, reason);
+
+	if (!ircd->uses_uid)
+	{
+		sts(":%s SERVER %s 2 :%s", me.name, server, reason);
+		return;
+	}
+
+	/* UnrealIRCd 6 only accepts remote servers introduced with SID; a
+	 * SERVER line on the services link is taken as a new handshake and
+	 * the link is dropped ("Missing password"). Make up an unused SID:
+	 * a digit followed by two digits or uppercase letters.
+	 */
+	static const char sidchars[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	static unsigned int sidctr = 0;
+	char sid[3 + 1];
+	unsigned int tries;
+
+	for (tries = 0; tries < 10U * 36U * 36U; tries++)
+	{
+		const unsigned int n = sidctr++ % (10U * 36U * 36U);
+
+		sid[0] = sidchars[n / (36U * 36U)];
+		sid[1] = sidchars[(n / 36U) % 36U];
+		sid[2] = sidchars[n % 36U];
+		sid[3] = '\0';
+
+		if (strcmp(sid, me.numeric) != 0 && server_find(sid) == NULL)
+			break;
+	}
+
+	if (tries == 10U * 36U * 36U)
+	{
+		slog(LG_ERROR, "unreal_jupe(): no free SID left to jupe %s", server);
+		return;
+	}
+
+	sts(":%s SID %s 2 %s :%s", me.numeric, server, sid, reason);
+	sts(":%s EOS", sid);
 }
 
 static void
